@@ -1,0 +1,23 @@
+import{_ as n}from"./plugin-vue_export-helper-c27b6911.js";import{r,o,c as s,a as t,d as l,w as i,b as e,e as d}from"./app-9da01d16.js";const u="/go-tutorial/assets/4.3.escape-7ca11bec.png?raw=true",p={},c=d(`<h1 id="_4-3-预防跨站脚本" tabindex="-1"><a class="header-anchor" href="#_4-3-预防跨站脚本" aria-hidden="true">#</a> 4.3 预防跨站脚本</h1><p>现在的网站包含大量的动态内容以提高用户体验，比过去要复杂得多。所谓动态内容，就是根据用户环境和需要，Web应用程序能够输出相应的内容。动态站点会受到一种名为“跨站脚本攻击”（Cross Site Scripting, 安全专家们通常将其缩写成 XSS）的威胁，而静态站点则完全不受其影响。</p><p>攻击者通常会在有漏洞的程序中插入JavaScript、VBScript、 ActiveX或Flash以欺骗用户。一旦得手，他们可以盗取用户帐户信息，修改用户设置，盗取/污染cookie和植入恶意广告等。</p><p>对XSS最佳的防护应该结合以下两种方法：一是验证所有输入数据，有效检测攻击(这个我们前面小节已经有过介绍);另一个是对所有输出数据进行适当的处理，以防止任何已成功注入的脚本在浏览器端运行。</p><p>那么Go里面是怎么做这个有效防护的呢？Go的html/template里面带有下面几个函数可以帮你转义</p><ul><li>func HTMLEscape(w io.Writer, b []byte) //把b进行转义之后写到w</li><li>func HTMLEscapeString(s string) string //转义s之后返回结果字符串</li><li>func HTMLEscaper(args ...interface{}) string //支持多个参数一起转义，返回结果字符串</li></ul><p>我们看4.1小节的例子</p><div class="language-Go line-numbers-mode" data-ext="Go"><pre class="language-Go"><code>
+fmt.Println(&quot;username:&quot;, template.HTMLEscapeString(r.Form.Get(&quot;username&quot;))) //输出到服务器端
+fmt.Println(&quot;password:&quot;, template.HTMLEscapeString(r.Form.Get(&quot;password&quot;)))
+template.HTMLEscape(w, []byte(r.Form.Get(&quot;username&quot;))) //输出到客户端
+</code></pre><div class="line-numbers" aria-hidden="true"><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div></div></div><p>如果我们输入的username是<code>&lt;script&gt;alert()&lt;/script&gt;</code>,那么我们可以在浏览器上面看到输出如下所示：</p><figure><img src="`+u+`" alt="" tabindex="0" loading="lazy"><figcaption></figcaption></figure><p>图4.3 Javascript过滤之后的输出</p><p>Go的html/template包默认帮你过滤了html标签，但是有时候你只想要输出这个<code>&lt;script&gt;alert()&lt;/script&gt;</code>看起来正常的信息，该怎么处理？请使用text/template。请看下面的例子：</p><div class="language-Go line-numbers-mode" data-ext="Go"><pre class="language-Go"><code>
+import &quot;text/template&quot;
+...
+t, err := template.New(&quot;foo&quot;).Parse(\`{{define &quot;T&quot;}}Hello, {{.}}!{{end}}\`)
+err = t.ExecuteTemplate(out, &quot;T&quot;, &quot;&lt;script&gt;alert(&#39;you have been pwned&#39;)&lt;/script&gt;&quot;)
+</code></pre><div class="line-numbers" aria-hidden="true"><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div></div></div><p>输出</p><pre><code>Hello, &lt;script&gt;alert(&#39;you have been pwned&#39;)&lt;/script&gt;!
+</code></pre><p>或者使用template.HTML类型</p><div class="language-Go line-numbers-mode" data-ext="Go"><pre class="language-Go"><code>
+import &quot;html/template&quot;
+...
+t, err := template.New(&quot;foo&quot;).Parse(\`{{define &quot;T&quot;}}Hello, {{.}}!{{end}}\`)
+err = t.ExecuteTemplate(out, &quot;T&quot;, template.HTML(&quot;&lt;script&gt;alert(&#39;you have been pwned&#39;)&lt;/script&gt;&quot;))
+</code></pre><div class="line-numbers" aria-hidden="true"><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div></div></div><p>输出</p><pre><code>Hello, &lt;script&gt;alert(&#39;you have been pwned&#39;)&lt;/script&gt;!
+</code></pre><p>转换成<code>template.HTML</code>后，变量的内容也不会被转义</p><p>转义的例子：</p><div class="language-Go line-numbers-mode" data-ext="Go"><pre class="language-Go"><code>
+import &quot;html/template&quot;
+...
+t, err := template.New(&quot;foo&quot;).Parse(\`{{define &quot;T&quot;}}Hello, {{.}}!{{end}}\`)
+err = t.ExecuteTemplate(out, &quot;T&quot;, &quot;&lt;script&gt;alert(&#39;you have been pwned&#39;)&lt;/script&gt;&quot;)
+</code></pre><div class="line-numbers" aria-hidden="true"><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div></div></div><p>转义之后的输出：</p><pre><code>Hello, &amp;lt;script&amp;gt;alert(&amp;#39;you have been pwned&amp;#39;)&amp;lt;/script&amp;gt;!
+</code></pre><h2 id="links" tabindex="-1"><a class="header-anchor" href="#links" aria-hidden="true">#</a> links</h2>`,25);function m(v,b){const a=r("RouterLink");return o(),s("div",null,[c,t("ul",null,[t("li",null,[l(a,{to:"/build-web-app/preface.html"},{default:i(()=>[e("目录")]),_:1})]),t("li",null,[e("上一节: "),l(a,{to:"/build-web-app/04.2.html"},{default:i(()=>[e("验证的输入")]),_:1})]),t("li",null,[e("下一节: "),l(a,{to:"/build-web-app/04.4.html"},{default:i(()=>[e("防止多次递交表单")]),_:1})])])])}const h=n(p,[["render",m],["__file","04.3.html.vue"]]);export{h as default};

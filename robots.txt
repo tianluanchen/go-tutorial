@@ -1,0 +1,5 @@
+
+User-agent:*
+Disallow:
+
+Sitemap: https://tianluanchen.github.io/go-tutorial/sitemap.xml

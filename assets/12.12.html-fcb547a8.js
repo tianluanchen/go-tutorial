@@ -1,0 +1,51 @@
+import{_ as o}from"./plugin-vue_export-helper-c27b6911.js";import{r as c,o as p,c as i,a as s,d as t,w as e,b as n,e as l}from"./app-9da01d16.js";const u={},d=l(`<h1 id="_12-12-go-中的密码学" tabindex="-1"><a class="header-anchor" href="#_12-12-go-中的密码学" aria-hidden="true">#</a> 12.12 Go 中的密码学</h1><p>通过网络传输的数据必须加密，以防止被 hacker（黑客）读取或篡改，并且保证发出的数据和收到的数据检验和一致。<br> 鉴于 Go 母公司的业务，我们毫不惊讶地看到 Go 的标准库为该领域提供了超过 30 个的包：</p><ul><li><code>hash</code> 包：实现了 <code>adler32</code>、<code>crc32</code>、<code>crc64</code> 和 <code>fnv</code> 校验；</li><li><code>crypto</code> 包：实现了其它的 hash 算法，比如 <code>md4</code>、<code>md5</code>、<code>sha1</code> 等。以及完整地实现了 <code>aes</code>、<code>blowfish</code>、<code>rc4</code>、<code>rsa</code>、<code>xtea</code> 等加密算法。</li></ul><p>下面的示例用 <code>sha1</code> 和 <code>md5</code> 计算并输出了一些校验值。</p><p>示例 12.20 <a href="examples/chapter_12/hash_sha1.go">hash_sha1.go</a>：</p><div class="language-go line-numbers-mode" data-ext="go"><pre class="language-go"><code><span class="token comment">// hash_sha1.go</span>
+<span class="token keyword">package</span> main
+
+<span class="token keyword">import</span> <span class="token punctuation">(</span>
+	<span class="token string">&quot;fmt&quot;</span>
+	<span class="token string">&quot;crypto/sha1&quot;</span>
+	<span class="token string">&quot;io&quot;</span>
+	<span class="token string">&quot;log&quot;</span>
+<span class="token punctuation">)</span>
+
+<span class="token keyword">func</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+	hasher <span class="token operator">:=</span> sha1<span class="token punctuation">.</span><span class="token function">New</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+	io<span class="token punctuation">.</span><span class="token function">WriteString</span><span class="token punctuation">(</span>hasher<span class="token punctuation">,</span> <span class="token string">&quot;test&quot;</span><span class="token punctuation">)</span>
+	b <span class="token operator">:=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token builtin">byte</span><span class="token punctuation">{</span><span class="token punctuation">}</span>
+	fmt<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">&quot;Result: %x\\n&quot;</span><span class="token punctuation">,</span> hasher<span class="token punctuation">.</span><span class="token function">Sum</span><span class="token punctuation">(</span>b<span class="token punctuation">)</span><span class="token punctuation">)</span>
+	fmt<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">&quot;Result: %d\\n&quot;</span><span class="token punctuation">,</span> hasher<span class="token punctuation">.</span><span class="token function">Sum</span><span class="token punctuation">(</span>b<span class="token punctuation">)</span><span class="token punctuation">)</span>
+	<span class="token comment">//</span>
+	hasher<span class="token punctuation">.</span><span class="token function">Reset</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+	data <span class="token operator">:=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token function">byte</span><span class="token punctuation">(</span><span class="token string">&quot;We shall overcome!&quot;</span><span class="token punctuation">)</span>
+	n<span class="token punctuation">,</span> err <span class="token operator">:=</span> hasher<span class="token punctuation">.</span><span class="token function">Write</span><span class="token punctuation">(</span>data<span class="token punctuation">)</span>
+	<span class="token keyword">if</span> n<span class="token operator">!=</span><span class="token function">len</span><span class="token punctuation">(</span>data<span class="token punctuation">)</span> <span class="token operator">||</span> err<span class="token operator">!=</span><span class="token boolean">nil</span> <span class="token punctuation">{</span>
+		log<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">&quot;Hash write error: %v / %v&quot;</span><span class="token punctuation">,</span> n<span class="token punctuation">,</span> err<span class="token punctuation">)</span>
+	<span class="token punctuation">}</span>
+	checksum <span class="token operator">:=</span> hasher<span class="token punctuation">.</span><span class="token function">Sum</span><span class="token punctuation">(</span>b<span class="token punctuation">)</span>
+	fmt<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">&quot;Result: %x\\n&quot;</span><span class="token punctuation">,</span> checksum<span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+</code></pre><div class="line-numbers" aria-hidden="true"><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div></div></div><p>输出：</p><div class="language-text line-numbers-mode" data-ext="text"><pre class="language-text"><code>Result: a94a8fe5ccb19ba61c4c0873d391e987982fbbd3
+Result: [169 74 143 229 204 177 155 166 28 76 8 115 211 145 233 135 152 47 187 211]
+Result: e2222bfc59850bbb00a722e764a555603bb59b2a
+</code></pre><div class="line-numbers" aria-hidden="true"><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div></div></div><p>通过调用 <code>sha1.New()</code> 创建了一个新的 <code>hash.Hash</code> 对象，用来计算 SHA1 校验值。<code>Hash</code> 类型实际上是一个接口，它实现了 <code>io.Writer</code> 接口：</p><div class="language-go line-numbers-mode" data-ext="go"><pre class="language-go"><code><span class="token keyword">type</span> Hash <span class="token keyword">interface</span> <span class="token punctuation">{</span>
+	<span class="token comment">// Write (via the embedded io.Writer interface) adds more data to the running hash.</span>
+	<span class="token comment">// It never returns an error.</span>
+	io<span class="token punctuation">.</span>Writer
+
+	<span class="token comment">// Sum appends the current hash to b and returns the resulting slice.</span>
+	<span class="token comment">// It does not change the underlying hash state.</span>
+	<span class="token function">Sum</span><span class="token punctuation">(</span>b <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token builtin">byte</span><span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token builtin">byte</span>
+
+	<span class="token comment">// Reset resets the Hash to its initial state.</span>
+	<span class="token function">Reset</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+	<span class="token comment">// Size returns the number of bytes Sum will return.</span>
+	<span class="token function">Size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token builtin">int</span>
+
+	<span class="token comment">// BlockSize returns the hash&#39;s underlying block size.</span>
+	<span class="token comment">// The Write method must be able to accept any amount</span>
+	<span class="token comment">// of data, but it may operate more efficiently if all writes</span>
+	<span class="token comment">// are a multiple of the block size.</span>
+	<span class="token function">BlockSize</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token builtin">int</span>
+<span class="token punctuation">}</span>
+</code></pre><div class="line-numbers" aria-hidden="true"><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div></div></div><p>通过 <code>io.WriteString</code> 或 <code>hasher.Write</code> 将给定的 <code>[]byte</code> 附加到当前的 <code>hash.Hash</code> 对象中。</p><p><strong>练习 12.9</strong>：<a href="exercises/chapter_12/hash_md5.go">hash_md5.go</a>：</p><p>在示例 12.20 中检验 md5 算法。</p><h2 id="链接" tabindex="-1"><a class="header-anchor" href="#链接" aria-hidden="true">#</a> 链接</h2>`,14);function r(k,m){const a=c("RouterLink");return p(),i("div",null,[d,s("ul",null,[s("li",null,[t(a,{to:"/the-way-to-go/directory.html"},{default:e(()=>[n("目录")]),_:1})]),s("li",null,[n("上一节："),t(a,{to:"/the-way-to-go/12.11.html"},{default:e(()=>[n("用 Gob 传输数据")]),_:1})]),s("li",null,[n("下一章："),t(a,{to:"/the-way-to-go/13.0.html"},{default:e(()=>[n("错误处理与测试")]),_:1})])])])}const b=o(u,[["render",r],["__file","12.12.html.vue"]]);export{b as default};

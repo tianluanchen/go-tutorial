@@ -1,0 +1,33 @@
+import{_ as o}from"./plugin-vue_export-helper-c27b6911.js";import{r as i,o as c,c as p,a,d as e,w as t,b as n,e as l}from"./app-9da01d16.js";const r={},d=l(`<h1 id="_13-2-运行时异常和-panic" tabindex="-1"><a class="header-anchor" href="#_13-2-运行时异常和-panic" aria-hidden="true">#</a> 13.2 运行时异常和 panic</h1><p>当发生像数组下标越界或类型断言失败这样的运行错误时，Go 运行时会触发<em>运行时 panic</em>，伴随着程序的崩溃抛出一个 <code>runtime.Error</code> 接口类型的值。这个错误值有个 <code>RuntimeError()</code> 方法用于区别普通错误。</p><p><code>panic()</code> 可以直接从代码初始化：当错误条件（我们所测试的代码）很严苛且不可恢复，程序不能继续运行时，可以使用 <code>panic()</code> 函数产生一个中止程序的运行时错误。<code>panic()</code> 接收一个做任意类型的参数，通常是字符串，在程序死亡时被打印出来。Go 运行时负责中止程序并给出调试信息。在示例 13.2 <a href="examples/chapter_13/panic.go">panic.go</a> 中阐明了它的工作方式：</p><div class="language-go line-numbers-mode" data-ext="go"><pre class="language-go"><code><span class="token keyword">package</span> main
+
+<span class="token keyword">import</span> <span class="token string">&quot;fmt&quot;</span>
+
+<span class="token keyword">func</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+	fmt<span class="token punctuation">.</span><span class="token function">Println</span><span class="token punctuation">(</span><span class="token string">&quot;Starting the program&quot;</span><span class="token punctuation">)</span>
+	<span class="token function">panic</span><span class="token punctuation">(</span><span class="token string">&quot;A severe error occurred: stopping the program!&quot;</span><span class="token punctuation">)</span>
+	fmt<span class="token punctuation">.</span><span class="token function">Println</span><span class="token punctuation">(</span><span class="token string">&quot;Ending the program&quot;</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+</code></pre><div class="line-numbers" aria-hidden="true"><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div></div></div><p>输出如下：</p><div class="language-text line-numbers-mode" data-ext="text"><pre class="language-text"><code>Starting the program
+panic: A severe error occurred: stopping the program!
+panic PC=0x4f3038
+runtime.panic+0x99 /go/src/pkg/runtime/proc.c:1032
+       runtime.panic(0x442938, 0x4f08e8)
+main.main+0xa5 E:/Go/GoBoek/code examples/chapter 13/panic.go:8
+       main.main()
+runtime.mainstart+0xf 386/asm.s:84
+       runtime.mainstart()
+runtime.goexit /go/src/pkg/runtime/proc.c:148
+       runtime.goexit()
+---- Error run E:/Go/GoBoek/code examples/chapter 13/panic.exe with code Crashed
+---- Program exited with code -1073741783
+</code></pre><div class="line-numbers" aria-hidden="true"><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div></div></div><p>一个检查程序是否被已知用户启动的具体例子：</p><div class="language-go line-numbers-mode" data-ext="go"><pre class="language-go"><code><span class="token keyword">var</span> user <span class="token operator">=</span> os<span class="token punctuation">.</span><span class="token function">Getenv</span><span class="token punctuation">(</span><span class="token string">&quot;USER&quot;</span><span class="token punctuation">)</span>
+
+<span class="token keyword">func</span> <span class="token function">check</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+	<span class="token keyword">if</span> user <span class="token operator">==</span> <span class="token string">&quot;&quot;</span> <span class="token punctuation">{</span>
+		<span class="token function">panic</span><span class="token punctuation">(</span><span class="token string">&quot;Unknown user: no value for $USER&quot;</span><span class="token punctuation">)</span>
+	<span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre><div class="line-numbers" aria-hidden="true"><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div></div></div><p>可以在导入包的 <code>init()</code> 函数中检查这些。</p><p>当发生错误必须中止程序时，<code>panic()</code> 可以用于错误处理模式：</p><div class="language-go line-numbers-mode" data-ext="go"><pre class="language-go"><code><span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+	<span class="token function">panic</span><span class="token punctuation">(</span><span class="token string">&quot;ERROR occurred:&quot;</span> <span class="token operator">+</span> err<span class="token punctuation">.</span><span class="token function">Error</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+</code></pre><div class="line-numbers" aria-hidden="true"><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div></div></div><p><u>Go panicking</u>：</p><p>在多层嵌套的函数调用中调用 <code>panic()</code>，可以马上中止当前函数的执行，所有的 <code>defer</code> 语句都会保证执行并把控制权交还给接收到 panic 的函数调用者。这样向上冒泡直到最顶层，并执行（每层的） <code>defer</code>，在栈顶处程序崩溃，并在命令行中用传给 <code>panic()</code> 的值报告错误情况：这个终止过程就是 <em>panicking</em>。</p><p>标准库中有许多包含 <code>Must</code> 前缀的函数，像 <code>regexp.MustComplie()</code> 和 <code>template.Must()</code>；当正则表达式或模板中转入的转换字符串导致错误时，这些函数会 <code>panic()</code>。</p><p>不能随意地用 <code>panic()</code> 中止程序，必须尽力补救错误让程序能继续执行。</p><h2 id="链接" tabindex="-1"><a class="header-anchor" href="#链接" aria-hidden="true">#</a> 链接</h2>`,16);function u(m,v){const s=i("RouterLink");return c(),p("div",null,[d,a("ul",null,[a("li",null,[e(s,{to:"/the-way-to-go/directory.html"},{default:t(()=>[n("目录")]),_:1})]),a("li",null,[n("上一节："),e(s,{to:"/the-way-to-go/13.1.html"},{default:t(()=>[n("错误处理")]),_:1})]),a("li",null,[n("下一节："),e(s,{to:"/the-way-to-go/13.3.html"},{default:t(()=>[n("从 panic 中恢复 (recover)")]),_:1})])])])}const b=o(r,[["render",u],["__file","13.2.html.vue"]]);export{b as default};

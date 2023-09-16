@@ -1,0 +1,87 @@
+import{_ as t}from"./plugin-vue_export-helper-c27b6911.js";import{r as p,o as i,c as l,a as s,b as n,d as e,w as c,e as o}from"./app-9da01d16.js";const d="/go-tutorial/assets/14.4_piseries-f19be109.png?raw=true",u={},r=s("h1",{id:"_14-4-使用-select-切换协程",tabindex:"-1"},[s("a",{class:"header-anchor",href:"#_14-4-使用-select-切换协程","aria-hidden":"true"},"#"),n(" 14.4 使用 select 切换协程")],-1),k=s("code",null,"select",-1),v=s("code",null,"switch",-1),m=s("code",null,"select",-1),h=o(`<div class="language-go line-numbers-mode" data-ext="go"><pre class="language-go"><code><span class="token keyword">select</span> <span class="token punctuation">{</span>
+<span class="token keyword">case</span> u<span class="token operator">:=</span> <span class="token operator">&lt;-</span> ch1<span class="token punctuation">:</span>
+        <span class="token operator">...</span>
+<span class="token keyword">case</span> v<span class="token operator">:=</span> <span class="token operator">&lt;-</span> ch2<span class="token punctuation">:</span>
+        <span class="token operator">...</span>
+        <span class="token operator">...</span>
+<span class="token keyword">default</span><span class="token punctuation">:</span> <span class="token comment">// no value ready to be received</span>
+        <span class="token operator">...</span>
+<span class="token punctuation">}</span>
+</code></pre><div class="line-numbers" aria-hidden="true"><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div></div></div><p><code>default</code> 语句是可选的；<code>fallthrough</code> 行为，和普通的 <code>switch</code> 相似，是不允许的。在任何一个 <code>case</code> 中执行 <code>break</code> 或者 <code>return</code>，select 就结束了。</p><p><code>select</code> 做的就是：选择处理列出的多个通信情况中的一个。</p><ul><li>如果都阻塞了，会等待直到其中一个可以处理</li><li>如果多个可以处理，随机选择一个</li><li>如果没有通道操作可以处理并且写了 <code>default</code> 语句，它就会执行：<code>default</code> 永远是可运行的（这就是准备好了，可以执行）。</li></ul><p>在 <code>select</code> 中使用发送操作并且有 <code>default</code> 可以确保发送不被阻塞！如果没有 <code>default</code>，<code>select</code> 就会一直阻塞。</p><p><code>select</code> 语句实现了一种监听模式，通常用在（无限）循环中；在某种情况下，通过 <code>break</code> 语句使循环退出。</p><p>在程序 <a href="examples/chapter_14/goroutine_select.go">goroutine_select.go</a> 中有 2 个通道 <code>ch1</code> 和 <code>ch2</code>，三个协程 <code>pump1()</code>、<code>pump2()</code> 和 <code>suck()</code>。这是一个典型的生产者消费者模式。在无限循环中，<code>ch1</code> 和 <code>ch2</code> 通过 <code>pump1()</code> 和 <code>pump2()</code> 填充整数；<code>suck()</code> 也是在无限循环中轮询输入的，通过 <code>select</code> 语句获取 <code>ch1</code> 和 <code>ch2</code> 的整数并输出。选择哪一个 <code>case</code> 取决于哪一个通道收到了信息。程序在 <code>main</code> 执行 1 秒后结束。</p><p>示例 14.10-<a href="examples/chapter_14/goroutine_select.go">goroutine_select.go</a>：</p><div class="language-go line-numbers-mode" data-ext="go"><pre class="language-go"><code><span class="token keyword">package</span> main
+
+<span class="token keyword">import</span> <span class="token punctuation">(</span>
+	<span class="token string">&quot;fmt&quot;</span>
+	<span class="token string">&quot;time&quot;</span>
+<span class="token punctuation">)</span>
+
+<span class="token keyword">func</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+	ch1 <span class="token operator">:=</span> <span class="token function">make</span><span class="token punctuation">(</span><span class="token keyword">chan</span> <span class="token builtin">int</span><span class="token punctuation">)</span>
+	ch2 <span class="token operator">:=</span> <span class="token function">make</span><span class="token punctuation">(</span><span class="token keyword">chan</span> <span class="token builtin">int</span><span class="token punctuation">)</span>
+
+	<span class="token keyword">go</span> <span class="token function">pump1</span><span class="token punctuation">(</span>ch1<span class="token punctuation">)</span>
+	<span class="token keyword">go</span> <span class="token function">pump2</span><span class="token punctuation">(</span>ch2<span class="token punctuation">)</span>
+	<span class="token keyword">go</span> <span class="token function">suck</span><span class="token punctuation">(</span>ch1<span class="token punctuation">,</span> ch2<span class="token punctuation">)</span>
+
+	time<span class="token punctuation">.</span><span class="token function">Sleep</span><span class="token punctuation">(</span><span class="token number">1e9</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">func</span> <span class="token function">pump1</span><span class="token punctuation">(</span>ch <span class="token keyword">chan</span> <span class="token builtin">int</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+	<span class="token keyword">for</span> i <span class="token operator">:=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token punctuation">;</span> i<span class="token operator">++</span> <span class="token punctuation">{</span>
+		ch <span class="token operator">&lt;-</span> i <span class="token operator">*</span> <span class="token number">2</span>
+	<span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">func</span> <span class="token function">pump2</span><span class="token punctuation">(</span>ch <span class="token keyword">chan</span> <span class="token builtin">int</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+	<span class="token keyword">for</span> i <span class="token operator">:=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token punctuation">;</span> i<span class="token operator">++</span> <span class="token punctuation">{</span>
+		ch <span class="token operator">&lt;-</span> i <span class="token operator">+</span> <span class="token number">5</span>
+	<span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">func</span> <span class="token function">suck</span><span class="token punctuation">(</span>ch1<span class="token punctuation">,</span> ch2 <span class="token keyword">chan</span> <span class="token builtin">int</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+	<span class="token keyword">for</span> <span class="token punctuation">{</span>
+		<span class="token keyword">select</span> <span class="token punctuation">{</span>
+		<span class="token keyword">case</span> v <span class="token operator">:=</span> <span class="token operator">&lt;-</span>ch1<span class="token punctuation">:</span>
+			fmt<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">&quot;Received on channel 1: %d\\n&quot;</span><span class="token punctuation">,</span> v<span class="token punctuation">)</span>
+		<span class="token keyword">case</span> v <span class="token operator">:=</span> <span class="token operator">&lt;-</span>ch2<span class="token punctuation">:</span>
+			fmt<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">&quot;Received on channel 2: %d\\n&quot;</span><span class="token punctuation">,</span> v<span class="token punctuation">)</span>
+		<span class="token punctuation">}</span>
+	<span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre><div class="line-numbers" aria-hidden="true"><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div></div></div><p>输出：</p><div class="language-text line-numbers-mode" data-ext="text"><pre class="language-text"><code>Received on channel 2: 5
+Received on channel 2: 6
+Received on channel 1: 0
+Received on channel 2: 7
+Received on channel 2: 8
+Received on channel 2: 9
+Received on channel 2: 10
+Received on channel 1: 2
+Received on channel 2: 11
+...
+Received on channel 2: 47404
+Received on channel 1: 94346
+Received on channel 1: 94348
+</code></pre><div class="line-numbers" aria-hidden="true"><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div></div></div><p>一秒内的输出非常惊人，如果我们给它计数 (<a href="examples/chapter_14/goroutine_select2.go">goroutine_select2.go</a>)，得到了 90000 个左右的数字。</p><h2 id="练习" tabindex="-1"><a class="header-anchor" href="#练习" aria-hidden="true">#</a> 练习：</h2><p>练习 14.7：</p><ul><li>a）在练习 5.4 的 <a href="exercises/chapter_5/for_loop.go">for_loop.go</a> 中，有一个常见的 <code>for</code> 循环打印数字。在函数 <code>tel()</code> 中实现一个 <code>for</code> 循环，用协程开始这个函数并在其中给通道发送数字。<code>main()</code> 线程从通道中获取并打印。不要使用 <code>time.Sleep()</code> 来同步：<a href="exercises/chapter_14/goroutine_panic.go">goroutine_panic.go</a></li><li>b）也许你的方案有效，但可能会引发运行时的 <code>panic()</code>：<code>throw:all goroutines are asleep-deadlock!</code> 为什么会这样？你如何解决这个问题？<a href="exercises/chapter_14/goroutine_close.go">goroutine_close.go</a></li><li>c）解决 a）的另外一种方式：使用一个额外的通道传递给协程，然后在结束的时候随便放点什么进去。<code>main()</code> 线程检查是否有数据发送给了这个通道，如果有就停止：<a href="exercises/chapter_14/goroutine_select.go">goroutine_select.go</a></li></ul><p>练习 14.8：</p><p>从示例 <a href="examples/chapter_6/fibonacci.go">6.13 fibonacci.go</a> 的斐波那契程序开始，制定解决方案，使斐波那契周期计算独立到协程中，并可以把结果发送给通道。</p><p>结束的时候关闭通道。<code>main()</code> 函数读取通道并打印结果：<a href="exercises/chapter_14/gofibonacci.go">goFibonacci.go</a></p><p>使用练习 <a href="exercises/chapter_6/fibonacci2.go">6.9 fibonacci2.go</a> 中的算法写一个更短的 <a href="exercises/chapter_14/gofibonacci2.go">gofibonacci2.go</a></p><p>使用 <code>select</code> 语句来写，并让通道退出 (<a href="exercises/chapter_14/gofibonacci_select.go">gofibonacci_select.go</a>)</p><p>注意：当给结果计时并和 6.13 对比时，我们发现使用通道通信的性能开销有轻微削减；这个例子中的算法使用协程并非性能最好的选择；但是 <a href="exercises/chapter_14/gofibonacci3.go">gofibonacci3</a> 方案使用了 2 个协程带来了 3 倍的提速。</p><p>练习 14.9：</p><p>做一个随机位生成器，程序可以提供无限的随机 0 或者 1 的序列：<a href="exercises/chapter_14/random_bitgen.go">random_bitgen.go</a></p><p>练习 14.10：<a href="exercises/chapter_14/polar_to_cartesian.go">polar_to_cartesian.go</a></p><p>（这是一种综合练习，使用到第 4、9、11 章和本章的内容。）写一个可交互的控制台程序，要求用户输入二位平面极坐标上的点（半径和角度（度））。计算对应的笛卡尔坐标系的点的 <code>x</code> 和 <code>y</code> 并输出。使用极坐标和笛卡尔坐标的结构体。</p><p>使用通道和协程：</p><ul><li><code>channel1</code> 用来接收极坐标</li><li><code>channel2</code> 用来接收笛卡尔坐标</li></ul><p>转换过程需要在协程中进行，从 <code>channel1</code> 中读取然后发送到 <code>channel2</code>。实际上做这种计算不提倡使用协程和通道，但是如果运算量很大很耗时，这种方案设计就非常合适了。</p><p>练习 14.11： <a href="exercises/chapter_14/concurrent_pi.go">concurrent_pi.go</a> / <a href="exercises/chapter_14/concurrent_pi2.go">concurrent_pi2.go</a></p><p>使用以下序列在协程中计算 pi：开启一个协程来计算公式中的每一项并将结果放入通道，<code>main()</code> 函数收集并累加结果，打印出 pi 的近似值。</p><figure><img src="`+d+'" alt="" tabindex="0" loading="lazy"><figcaption></figcaption></figure>',31),b=o(`<p>再次声明这只是为了一边练习协程的概念一边找点乐子。</p><p>如果你需要的话可使用 <code>math.pi</code> 中的 <code>Pi</code>；而且不使用协程会运算的更快。一个急速版本：使用 <code>GOMAXPROCS</code>，开启和 <code>GOMAXPROCS</code> 同样多个协程。</p><p><strong>习惯用法：后台服务模式</strong></p><p>服务通常是是用后台协程中的无限循环实现的，在循环中使用 <code>select</code> 获取并处理通道中的数据：</p><div class="language-go line-numbers-mode" data-ext="go"><pre class="language-go"><code><span class="token comment">// Backend goroutine.</span>
+<span class="token keyword">func</span> <span class="token function">backend</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+	<span class="token keyword">for</span> <span class="token punctuation">{</span>
+		<span class="token keyword">select</span> <span class="token punctuation">{</span>
+		<span class="token keyword">case</span> cmd <span class="token operator">:=</span> <span class="token operator">&lt;-</span>ch1<span class="token punctuation">:</span>
+			<span class="token comment">// Handle ...</span>
+		<span class="token keyword">case</span> cmd <span class="token operator">:=</span> <span class="token operator">&lt;-</span>ch2<span class="token punctuation">:</span>
+			<span class="token operator">...</span>
+		<span class="token keyword">case</span> cmd <span class="token operator">:=</span> <span class="token operator">&lt;-</span>chStop<span class="token punctuation">:</span>
+			<span class="token comment">// stop server</span>
+		<span class="token punctuation">}</span>
+	<span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre><div class="line-numbers" aria-hidden="true"><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div></div></div><p>在程序的其他地方给通道 <code>ch1</code>，<code>ch2</code> 发送数据，比如：通道 <code>stop</code> 用来清理结束服务程序。</p><p>另一种方式（但是不太灵活）就是（客户端）在 <code>chRequest</code> 上提交请求，后台协程循环这个通道，使用 <code>switch</code> 根据请求的行为来分别处理：</p><div class="language-go line-numbers-mode" data-ext="go"><pre class="language-go"><code><span class="token keyword">func</span> <span class="token function">backend</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+	<span class="token keyword">for</span> req <span class="token operator">:=</span> <span class="token keyword">range</span> chRequest <span class="token punctuation">{</span>
+		<span class="token keyword">switch</span> req<span class="token punctuation">.</span><span class="token function">Subjext</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+			<span class="token keyword">case</span> A1<span class="token punctuation">:</span>  <span class="token comment">// Handle case ...</span>
+			<span class="token keyword">case</span> A2<span class="token punctuation">:</span>  <span class="token comment">// Handle case ...</span>
+			<span class="token keyword">default</span><span class="token punctuation">:</span>
+			  <span class="token comment">// Handle illegal request ..</span>
+			  <span class="token comment">// ...</span>
+		<span class="token punctuation">}</span>
+	<span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre><div class="line-numbers" aria-hidden="true"><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div></div></div><h2 id="链接" tabindex="-1"><a class="header-anchor" href="#链接" aria-hidden="true">#</a> 链接</h2>`,9);function g(f,_){const a=p("RouterLink");return i(),l("div",null,[r,s("p",null,[n("从不同的并发执行的协程中获取值可以通过关键字 "),k,n(" 来完成，它和 "),v,n(" 控制语句非常相似（"),e(a,{to:"/the-way-to-go/05.3.html"},{default:c(()=>[n("章节 5.3")]),_:1}),n("）也被称作通信开关；它的行为像是“你准备好了吗”的轮询机制；"),m,n(" 监听进入通道的数据，也可以是用通道发送值的时候。")]),h,s("p",null,[n("计算执行时间（参见第 "),e(a,{to:"/the-way-to-go/6.11.html"},{default:c(()=>[n("6.11")]),_:1}),n(" 节）")]),b,s("ul",null,[s("li",null,[e(a,{to:"/the-way-to-go/directory.html"},{default:c(()=>[n("目录")]),_:1})]),s("li",null,[n("上一节："),e(a,{to:"/the-way-to-go/14.3.html"},{default:c(()=>[n("通道的同步：关闭通道-测试阻塞的通道")]),_:1})]),s("li",null,[n("下一节："),e(a,{to:"/the-way-to-go/14.5.html"},{default:c(()=>[n("通道，超时和计时器（Ticker）")]),_:1})])])])}const x=t(u,[["render",g],["__file","14.4.html.vue"]]);export{x as default};
